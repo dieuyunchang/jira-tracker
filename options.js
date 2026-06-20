@@ -43,7 +43,7 @@
 
   function collect() {
     return {
-      jiraBase: $("jiraBase").value.trim() || "https://jira.nhc.sa",
+      jiraBase: $("jiraBase").value.trim() || "https://jira.company.xyz",
       pollMinutes: Math.max(1, parseInt($("pollMinutes").value, 10) || 5),
       notify: {
         status: $("n_status").checked,
@@ -74,11 +74,35 @@
   }
 
   async function save() {
-    await JT.saveSettings(collect());
-    await send({ cmd: "reconfigure" });
+    const cfg = collect();
     const el = $("saved");
+
+    if (!JT.isConfigured(cfg.jiraBase)) {
+      el.textContent = "⚠ Hãy nhập đúng Jira base URL của bạn trước";
+      el.style.color = "#de350b";
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 2500);
+      return;
+    }
+
+    // Request host permission FIRST (preserve the click's user gesture).
+    const origin = JT.originPattern(cfg.jiraBase);
+    let granted = false;
+    try {
+      granted = await chrome.permissions.request({ origins: [origin] });
+    } catch (e) {
+      granted = false;
+    }
+
+    await JT.saveSettings(cfg);
+    await send({ cmd: "reconfigure" });
+
+    el.style.color = granted ? "#36b37e" : "#ff8b00";
+    el.textContent = granted
+      ? "✓ Đã lưu & cấp quyền truy cập Jira"
+      : "✓ Đã lưu — nhưng CHƯA cấp quyền. Bấm Lưu lại và chọn Allow.";
     el.classList.add("show");
-    setTimeout(() => el.classList.remove("show"), 1500);
+    setTimeout(() => el.classList.remove("show"), granted ? 1800 : 4000);
   }
 
   async function exportData() {
@@ -110,6 +134,12 @@
       const data = JSON.parse(txt);
       if (data.settings) await JT.saveSettings(data.settings);
       if (data.tracked) await JT.saveTracked(data.tracked);
+      // try to grant host permission for the imported URL (this change event is a gesture)
+      const s = await JT.getSettings();
+      const origin = JT.originPattern(s.jiraBase);
+      if (JT.isConfigured(s.jiraBase) && origin) {
+        try { await chrome.permissions.request({ origins: [origin] }); } catch (e) {}
+      }
       await send({ cmd: "reconfigure" });
       await load();
       alert("Đã import xong.");

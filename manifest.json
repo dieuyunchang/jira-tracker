@@ -7,10 +7,11 @@
     "storage",
     "alarms",
     "notifications",
-    "tabs"
+    "tabs",
+    "scripting"
   ],
-  "host_permissions": [
-    "https://jira.nhc.sa/*"
+  "optional_host_permissions": [
+    "https://*/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -31,13 +32,5 @@
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://jira.nhc.sa/*"],
-      "js": ["common.js", "content.js"],
-      "css": ["content.css"],
-      "run_at": "document_idle"
-    }
-  ]
+  }
 }

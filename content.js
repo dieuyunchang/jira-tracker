@@ -1,4 +1,4 @@
-/* content.js — runs on jira.nhc.sa pages.
+/* content.js — runs on the configured Jira host.
  * - Signals background that a Jira page loaded (resume from VPN pause).
  * - On a ticket page, shows a banner to add/remove from watch list. */
 (function () {

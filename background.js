@@ -160,6 +160,22 @@ async function pollNow(reason) {
   const settings = await JT.getSettings();
   const base = settings.jiraBase;
   let state = await JT.getState();
+
+  // Not configured yet, or host permission not granted -> don't spam, ask for setup
+  const origin = JT.originPattern(base);
+  if (!JT.isConfigured(base) || !origin) {
+    await JT.saveState({ lastError: "setup", paused: false });
+    polling = false;
+    return;
+  }
+  const granted = await chrome.permissions.contains({ origins: [origin] });
+  if (!granted) {
+    await JT.saveState({ lastError: "setup", paused: false });
+    polling = false;
+    return;
+  }
+
+  const wasPaused = !!state.paused;
   try {
     // 1. who am I
     let me = state.user;
@@ -322,6 +338,8 @@ async function pollNow(reason) {
       seeded: true,
     });
     chrome.alarms.clear(ALARM_PROBE);
+    // came back from a paused state -> restart the normal poll cadence
+    if (wasPaused) await setupAlarm();
   } catch (err) {
     await handlePollError(err, settings);
   } finally {
@@ -332,21 +350,24 @@ async function pollNow(reason) {
 async function handlePollError(err, settings) {
   const type = (err && err.type) || "unknown";
   if (type === "network") {
-    // VPN off / cannot reach Jira -> pause, no spam
+    // VPN off / cannot reach Jira -> stop polling entirely, no spam.
     await JT.saveState({ paused: true, lastError: "network" });
+    chrome.alarms.clear(ALARM_POLL);
     if (settings.pausedAutoProbe) {
       chrome.alarms.create(ALARM_PROBE, {
         periodInMinutes: Math.max(5, settings.pausedProbeMinutes),
       });
     }
   } else if (type === "auth") {
+    const prev = await JT.getState();
     await JT.saveState({ paused: false, lastError: "auth" });
+    if (prev.lastError === "auth") return; // already nudged, don't re-pop every poll
     // one gentle nudge to re-login (deduped by static id)
     chrome.notifications.create("jt-auth", {
       type: "basic",
       iconUrl: "icons/icon128.png",
       title: "Jira Tracker — cần đăng nhập lại",
-      message: "Phiên Jira đã hết. Mở jira.nhc.sa và đăng nhập lại để tiếp tục theo dõi.",
+      message: "Phiên Jira đã hết. Mở Jira và đăng nhập lại để tiếp tục theo dõi.",
       priority: 1,
     });
   } else {
@@ -476,6 +497,42 @@ async function setupAlarm() {
   });
 }
 
+// Register the content script for the user-configured Jira origin (if permission granted).
+async function ensureContentScript() {
+  const settings = await JT.getSettings();
+  const origin = JT.originPattern(settings.jiraBase);
+  if (!JT.isConfigured(settings.jiraBase) || !origin) return false;
+  let granted = false;
+  try {
+    granted = await chrome.permissions.contains({ origins: [origin] });
+  } catch (e) {}
+  // remove any previous registration first (origin may have changed)
+  try {
+    const existing = await chrome.scripting.getRegisteredContentScripts({
+      ids: ["jt-content"],
+    });
+    if (existing && existing.length) {
+      await chrome.scripting.unregisterContentScripts({ ids: ["jt-content"] });
+    }
+  } catch (e) {}
+  if (!granted) return false;
+  try {
+    await chrome.scripting.registerContentScripts([
+      {
+        id: "jt-content",
+        matches: [origin],
+        js: ["common.js", "content.js"],
+        css: ["content.css"],
+        runAt: "document_idle",
+        persistAcrossSessions: true,
+      },
+    ]);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === ALARM_POLL) pollNow("alarm");
   else if (alarm.name === ALARM_PROBE) pollNow("probe");
@@ -483,10 +540,12 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.runtime.onInstalled.addListener(() => {
   setupAlarm();
+  ensureContentScript();
   pollNow("installed");
 });
 chrome.runtime.onStartup.addListener(() => {
   setupAlarm();
+  ensureContentScript();
   pollNow("startup");
 });
 
@@ -511,12 +570,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ ok: true });
           break;
         case "jiraPageLoaded": {
-          // a Jira page rendered successfully -> network/VPN is up
+          // a Jira page rendered successfully -> network/VPN is up.
+          // Let pollNow see wasPaused=true so it restarts the poll cadence on success.
           const st = await JT.getState();
-          if (st.paused) {
-            await JT.saveState({ paused: false });
-            pollNow("resume");
-          }
+          if (st.paused) pollNow("resume");
           sendResponse({ ok: true });
           break;
         }
@@ -527,6 +584,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           break;
         case "reconfigure":
           await setupAlarm();
+          await ensureContentScript();
+          // user just (re)configured; clear stale state and poll
+          await JT.saveState({ paused: false, lastError: "" });
+          pollNow("reconfigure");
           sendResponse({ ok: true });
           break;
         case "getStatus": {
@@ -548,7 +609,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return true; // async
 });
 
-// kick an alarm on SW spin-up if missing
-chrome.alarms.get(ALARM_POLL, (a) => {
-  if (!a) setupAlarm();
+// On service-worker spin-up, make sure the poll alarm exists —
+// but NOT while paused (VPN off), where we intentionally stopped it.
+chrome.alarms.get(ALARM_POLL, async (a) => {
+  if (a) return;
+  const st = await JT.getState();
+  if (!st.paused) setupAlarm();
 });

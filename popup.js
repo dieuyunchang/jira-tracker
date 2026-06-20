@@ -34,7 +34,10 @@
   function renderStatus(state) {
     const el = $("status");
     el.className = "status";
-    if (state.lastError === "auth") {
+    if (state.lastError === "setup") {
+      el.textContent = "● Chưa cấu hình — mở Settings";
+      el.classList.add("warn");
+    } else if (state.lastError === "auth") {
       el.textContent = "● Cần đăng nhập Jira";
       el.classList.add("warn");
     } else if (state.paused) {
@@ -155,9 +158,26 @@
     // clear unread badge on open
     send({ cmd: "clearBadge" });
 
-    // "Thêm page này" — active only on a Jira ticket page
+    // "Thêm page này" — active only on a ticket page of the CONFIGURED Jira host
+    const st = await send({ cmd: "getStatus" });
+    const jiraBase = (st && st.settings && st.settings.jiraBase) || "";
+    const cfgOrigin = JT.isConfigured(jiraBase)
+      ? (function () {
+          try {
+            return new URL(jiraBase).origin;
+          } catch (e) {
+            return null;
+          }
+        })()
+      : null;
+
     const tab = await getActiveTab();
-    const key = tab ? JT.parseKeyFromUrl(tab.url) : null;
+    let key = null;
+    if (tab && cfgOrigin) {
+      try {
+        if (new URL(tab.url).origin === cfgOrigin) key = JT.parseKeyFromUrl(tab.url);
+      } catch (e) {}
+    }
     const addBtn = $("addPage");
     if (key) {
       addBtn.disabled = false;

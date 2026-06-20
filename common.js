@@ -7,7 +7,8 @@
 (function (root) {
   "use strict";
 
-  const JIRA_BASE = "https://jira.nhc.sa";
+  // Placeholder — each user sets their real Jira URL in Settings.
+  const JIRA_BASE = "https://jira.company.xyz";
 
   // Default user settings. Stored under chrome.storage.local key "settings".
   const DEFAULT_SETTINGS = {
@@ -128,7 +129,7 @@
   }
 
   const KEY_RE = /([A-Z][A-Z0-9_]+-\d+)/;
-  // Parse issue key from a Jira browse URL like https://jira.nhc.sa/browse/EJAR-18937
+  // Parse issue key from a Jira browse URL like https://jira.company.xyz/browse/EJAR-18937
   function parseKeyFromUrl(url) {
     if (!url) return null;
     try {
@@ -145,6 +146,20 @@
 
   function browseUrl(base, key) {
     return base.replace(/\/+$/, "") + "/browse/" + key;
+  }
+
+  // Match pattern for host permission / content-script registration, e.g.
+  // "https://jira.company.xyz" -> "https://jira.company.xyz/*"
+  function originPattern(base) {
+    try {
+      return new URL(base).origin + "/*";
+    } catch (e) {
+      return null;
+    }
+  }
+  // Is the base a real, configured URL (not the placeholder / empty)?
+  function isConfigured(base) {
+    return !!base && !/jira\.company\.xyz/i.test(base);
   }
 
   // YYYY-MM-DD in local time for grouping
@@ -188,6 +203,8 @@
     deepMerge,
     parseKeyFromUrl,
     browseUrl,
+    originPattern,
+    isConfigured,
     dayKey,
     dayLabel,
     KEY_RE,
