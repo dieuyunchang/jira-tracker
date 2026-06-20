@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jira Tracker — Settings</title>
+    <style>
+      :root {
+        --blue: #2667e0;
+        --ink: #172b4d;
+        --sub: #6b778c;
+        --line: #ebecf0;
+      }
+      body {
+        font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Arial, sans-serif;
+        color: var(--ink);
+        max-width: 640px;
+        margin: 24px auto;
+        padding: 0 18px 60px;
+      }
+      h1 {
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin: 16px 0;
+      }
+      .card h2 {
+        font-size: 14px;
+        margin: 0 0 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--sub);
+      }
+      label.row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 8px 0;
+      }
+      label.row input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+      }
+      .field {
+        margin: 10px 0;
+      }
+      .field label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .hint {
+        color: var(--sub);
+        font-size: 12px;
+        margin-top: 3px;
+      }
+      input[type="text"],
+      input[type="number"],
+      input[type="time"],
+      textarea,
+      select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #c1c7d0;
+        border-radius: 6px;
+        font: inherit;
+        box-sizing: border-box;
+      }
+      textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+      .inline {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .inline > div {
+        flex: 1;
+      }
+      .actions {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      button {
+        border: none;
+        border-radius: 6px;
+        padding: 9px 16px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .primary {
+        background: var(--blue);
+        color: #fff;
+      }
+      .ghost {
+        background: #fff;
+        border: 1px solid var(--line);
+        color: var(--ink);
+      }
+      #saved {
+        color: #36b37e;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      #saved.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><img src="icons/icon32.png" width="22" height="22" alt="" /> Jira Tracker — Settings</h1>
+
+    <div class="card">
+      <h2>Kết nối & tần suất</h2>
+      <div class="field">
+        <label>Jira base URL</label>
+        <input type="text" id="jiraBase" placeholder="https://jira.nhc.sa" />
+      </div>
+      <div class="field">
+        <label>Tần suất poll (phút)</label>
+        <input type="number" id="pollMinutes" min="1" max="120" />
+        <div class="hint">Tối thiểu 1 phút. Mặc định 5.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Thông báo loại nào</h2>
+      <label class="row"><input type="checkbox" id="n_status" /> Đổi status</label>
+      <label class="row"><input type="checkbox" id="n_assigned" /> Được assign cho tôi</label>
+      <label class="row"><input type="checkbox" id="n_comment" /> Comment mới</label>
+      <label class="row"><input type="checkbox" id="n_mention" /> Bị tag tên (mention)</label>
+    </div>
+
+    <div class="card">
+      <h2>Tự động thêm vào watch list</h2>
+      <label class="row"><input type="checkbox" id="a_assigned" /> Ticket được assign cho tôi</label>
+      <label class="row"><input type="checkbox" id="a_watcher" /> Ticket tôi là watcher</label>
+      <label class="row"><input type="checkbox" id="a_reporter" /> Ticket tôi là reporter</label>
+      <div class="field">
+        <label>Chỉ tự thêm ticket cập nhật trong vòng (ngày)</label>
+        <input type="number" id="lookback" min="1" max="90" />
+        <div class="hint">Tránh kéo về quá nhiều ticket cũ. Mặc định 14.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Tự gỡ khi ticket kết thúc</h2>
+      <div class="field">
+        <label>Danh sách status coi là "kết thúc" (mỗi dòng 1 status)</label>
+        <textarea id="endStatuses"></textarea>
+        <div class="hint">Khớp không phân biệt hoa thường. Ví dụ: Done, Released…</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>VPN / mạng</h2>
+      <label class="row">
+        <input type="checkbox" id="pausedAutoProbe" />
+        Tự dò lại khi đang tạm dừng (VPN off)
+      </label>
+      <div class="hint">
+        Mặc định TẮT — chỉ chạy lại khi có 1 trang Jira load thành công. Bật thì
+        thêm 1 nhịp dò thưa:
+      </div>
+      <div class="field">
+        <label>Nhịp dò khi tạm dừng (phút)</label>
+        <input type="number" id="probeMinutes" min="5" max="180" />
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Quiet hours (không báo ngoài giờ)</h2>
+      <label class="row"><input type="checkbox" id="q_enabled" /> Bật quiet hours</label>
+      <div class="inline">
+        <div class="field"><label>Từ</label><input type="time" id="q_start" /></div>
+        <div class="field"><label>Đến</label><input type="time" id="q_end" /></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Khác</h2>
+      <div class="inline">
+        <div class="field"><label>Giới hạn số ticket track</label><input type="number" id="maxTracked" min="10" max="500" /></div>
+        <div class="field"><label>Giữ lịch sử (ngày)</label><input type="number" id="historyDays" min="1" max="90" /></div>
+      </div>
+      <div class="field">
+        <button class="ghost" id="exportBtn">⬇ Export (backup)</button>
+        <button class="ghost" id="importBtn">⬆ Import</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="save">Lưu</button>
+      <span id="saved">✓ Đã lưu</span>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

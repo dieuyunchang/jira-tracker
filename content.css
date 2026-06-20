@@ -1,0 +1,72 @@
+.jt-banner {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #172b4d;
+  border: 1px solid #dfe1e6;
+  border-left: 4px solid #2667e0;
+  box-shadow: 0 6px 20px rgba(9, 30, 66, 0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: 13px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  max-width: 420px;
+}
+.jt-banner .jt-key {
+  font-weight: 700;
+  color: #2667e0;
+}
+.jt-banner .jt-msg {
+  color: #44546f;
+}
+.jt-banner .jt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #97a0af;
+  display: inline-block;
+}
+.jt-banner .jt-dot.jt-on {
+  background: #36b37e;
+}
+.jt-banner .jt-btn {
+  border: none;
+  background: #2667e0;
+  color: #fff;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.jt-banner .jt-btn.jt-remove {
+  background: #de350b;
+}
+.jt-banner .jt-btn:hover {
+  filter: brightness(0.95);
+}
+.jt-banner .jt-link {
+  border: none;
+  background: transparent;
+  color: #6b778c;
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+  padding: 4px;
+}
+.jt-banner .jt-x {
+  border: none;
+  background: transparent;
+  color: #6b778c;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  line-height: 1;
+}
+.jt-banner .jt-x:hover {
+  color: #172b4d;
+}
