@@ -121,6 +121,12 @@
       #saved.show {
         opacity: 1;
       }
+      .credit {
+        text-align: center;
+        color: var(--sub);
+        font-size: 12px;
+        margin-top: 18px;
+      }
     </style>
   </head>
   <body>
@@ -150,6 +156,23 @@
       <label class="row"><input type="checkbox" id="n_assigned" /> Được assign cho tôi</label>
       <label class="row"><input type="checkbox" id="n_comment" /> Comment mới</label>
       <label class="row"><input type="checkbox" id="n_mention" /> Bị tag tên (mention)</label>
+      <div class="field">
+        <label>Số thay đổi tối đa hiển thị trong 1 thông báo</label>
+        <input type="number" id="maxNotifChanges" min="1" max="20" />
+        <div class="hint">Chỉ hiện N thay đổi mới nhất. Mặc định 5.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Bỏ qua comment chứa text</h2>
+      <div class="field">
+        <label>Mỗi dòng 1 chuỗi — comment chứa chuỗi này sẽ KHÔNG báo</label>
+        <textarea id="commentIgnore" placeholder="mentioned this issue in a merge request of"></textarea>
+        <div class="hint">
+          Khớp không phân biệt hoa thường, so theo "chứa". Dùng để bỏ qua comment
+          tự động từ bot/tích hợp (vd GitLab merge request).
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -215,6 +238,8 @@
       <button class="primary" id="save">Lưu</button>
       <span id="saved">✓ Đã lưu</span>
     </div>
+
+    <div class="credit">tạo bởi Yunchang Dieu</div>
 
     <script src="common.js"></script>
     <script src="options.js"></script>

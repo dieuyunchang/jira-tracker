@@ -16,7 +16,25 @@
 
     <button id="addPage" class="add-page" disabled>➕ Thêm page này</button>
 
+    <div class="tabs">
+      <button id="tabList" class="tab active">📋 Watch list</button>
+      <button id="tabUpdates" class="tab">
+        🔔 Cập nhật<span id="tabCount" class="count"></span>
+      </button>
+    </div>
+
     <div id="list" class="list"></div>
+
+    <div id="updates" hidden>
+      <div class="utools">
+        <div class="seg">
+          <button id="fUnread" class="seg-btn active">Chưa đọc</button>
+          <button id="fAll" class="seg-btn">Tất cả</button>
+        </div>
+        <button id="markAll" class="ghost-sm">✓ Đã đọc hết</button>
+      </div>
+      <div id="ulist" class="list"></div>
+    </div>
 
     <div class="ftr">
       <button id="pollNow" class="ghost">↻ Poll ngay</button>

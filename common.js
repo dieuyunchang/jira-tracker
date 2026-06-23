@@ -29,6 +29,12 @@
     },
     // Only auto-add tickets updated within this many days (avoid backfill flood)
     autoAddLookbackDays: 14,
+    // Max number of (latest) changes shown in a single notification / update entry
+    maxNotifChanges: 5,
+    // Skip a comment notification if its body contains ANY of these substrings
+    // (case-insensitive). One per line in Settings. Good for bot/integration noise
+    // like GitLab "mentioned this issue in a merge request of ...".
+    commentIgnore: [],
     // Statuses considered "finished" -> auto-remove from watch list
     endStatuses: [
       "Done",

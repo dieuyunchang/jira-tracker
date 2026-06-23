@@ -64,13 +64,34 @@ function getMyself(base) {
   return apiGet(base, "/rest/api/2/myself");
 }
 
-function searchJql(base, jql, fields, maxResults) {
-  return apiPost(base, "/rest/api/2/search", {
+function searchJql(base, jql, fields, maxResults, expand) {
+  const body = {
     jql,
     fields: fields || FIELDS_BASE,
     maxResults: maxResults || 100,
     startAt: 0,
-  });
+  };
+  if (expand) body.expand = expand;
+  return apiPost(base, "/rest/api/2/search", body);
+}
+
+// Author (username) of the most recent activity on an issue, looking at both
+// comments and the changelog. Used to suppress notifications for self-actions.
+function latestActivityAuthor(detail) {
+  let best = null; // { name, at }
+  const consider = (author, created) => {
+    if (!author || !created) return;
+    const t = Date.parse(created);
+    if (isNaN(t)) return;
+    if (!best || t > best.at) best = { name: author.name, at: t };
+  };
+  const comments =
+    (detail.fields && detail.fields.comment && detail.fields.comment.comments) ||
+    [];
+  for (const c of comments) consider(c.author, c.created);
+  const hist = (detail.changelog && detail.changelog.histories) || [];
+  for (const h of hist) consider(h.author, h.created);
+  return best;
 }
 
 // ---------------- snapshot helpers ----------------
@@ -119,6 +140,7 @@ function isQuiet(settings) {
   return cur >= start || cur < end; // overnight window
 }
 
+// Fire an OS notification (does NOT touch unread/badge — that's recordUpdate's job)
 async function notify(key, title, message) {
   await new Promise((resolve) =>
     chrome.notifications.create("open|" + key + "|" + Date.now(), {
@@ -128,6 +150,20 @@ async function notify(key, title, message) {
       message,
       priority: 1,
     }, () => resolve())
+  );
+}
+
+// Record an update into history (for the popup "Cập nhật" tab) + bump badge.
+async function recordUpdate(base, key, title, changes, settings) {
+  await JT.pushHistory(
+    {
+      key,
+      title,
+      url: JT.browseUrl(base, key),
+      changes,
+      read: false,
+    },
+    settings.historyDays
   );
   const st = await JT.getState();
   const unread = (st.unread || 0) + 1;
@@ -141,13 +177,27 @@ function updateBadge(n) {
 }
 
 chrome.notifications.onClicked.addListener((notifId) => {
-  if (notifId.startsWith("open|")) {
-    const key = notifId.split("|")[1];
-    JT.getSettings().then((s) => {
-      chrome.tabs.create({ url: JT.browseUrl(s.jiraBase, key) });
-    });
+  if (!notifId.startsWith("open|")) return;
+  const key = notifId.split("|")[1];
+  (async () => {
+    const s = await JT.getSettings();
+    chrome.tabs.create({ url: JT.browseUrl(s.jiraBase, key) });
+    // mark this ticket's unread updates as read + decrement badge
+    const hist = await JT.getHistory();
+    let dec = 0;
+    for (const h of hist) {
+      if (h.key === key && !h.read) {
+        h.read = true;
+        dec++;
+      }
+    }
+    if (dec) await JT.setLocal({ history: hist });
+    const st = await JT.getState();
+    const unread = Math.max(0, (st.unread || 0) - dec);
+    await JT.saveState({ unread });
+    updateBadge(unread);
     chrome.notifications.clear(notifId);
-  }
+  })();
 });
 
 // ---------------- core poll ----------------
@@ -225,7 +275,8 @@ async function pollNow(reason) {
           base,
           `key in (${changedKeys.join(",")})`,
           ["comment", "summary", "status", "assignee", "updated"],
-          changedKeys.length
+          changedKeys.length,
+          ["changelog"]
         );
         for (const iss of cdata.issues || []) commentsByKey[iss.key] = iss;
       }
@@ -237,6 +288,18 @@ async function pollNow(reason) {
         if (!prev.updated) continue; // just seeded above
         const snap = snapshotFromIssue(base, iss);
         if (snap.updated === prev.updated) continue;
+
+        const detail = commentsByKey[key];
+
+        // If the most recent activity on this ticket was done by me, it's not
+        // new info -> update snapshot silently, no notification.
+        const la = detail ? latestActivityAuthor(detail) : null;
+        if (la && la.name === me.name) {
+          tracked[key] = Object.assign(prev, snap);
+          // still auto-remove (silently) if I moved it to a finished status
+          if (isEndStatus(snap.status, settings.endStatuses)) delete tracked[key];
+          continue;
+        }
 
         const changes = [];
 
@@ -256,7 +319,6 @@ async function pollNow(reason) {
         }
 
         // comments / mentions (from detailed fetch)
-        const detail = commentsByKey[key];
         if (detail) {
           const comments =
             (detail.fields &&
@@ -269,6 +331,12 @@ async function pollNow(reason) {
             const author =
               (c.author && (c.author.displayName || c.author.name)) || "Ai đó";
             const body = c.body || "";
+            // skip noisy comments matching user-defined ignore substrings
+            const lowBody = body.toLowerCase();
+            const ignored = (settings.commentIgnore || []).some(
+              (s) => s && lowBody.includes(s.toLowerCase())
+            );
+            if (ignored) continue;
             const mentionsMe =
               body.includes(`[~${me.name}]`) ||
               (me.displayName && body.includes(me.displayName));
@@ -292,28 +360,34 @@ async function pollNow(reason) {
         // update snapshot regardless
         tracked[key] = Object.assign(prev, snap);
 
-        // fire notifications (respect settings + quiet hours)
+        // record update + fire notification (respect settings + quiet hours)
         const quiet = isQuiet(settings);
         const allowed = changes.filter((c) => settings.notify[c.type]);
-        if (allowed.length && !quiet) {
-          const title = `${key} • ${snap.title}`.slice(0, 90);
-          const msg =
-            allowed.length === 1
-              ? allowed[0].text
-              : `${allowed.length} cập nhật: ` +
-                allowed.map((c) => c.text).join("; ");
-          await notify(key, title, msg);
-        }
         if (allowed.length) {
-          await JT.pushHistory(
-            { key, title: snap.title, changes: allowed.map((c) => c.text) },
-            settings.historyDays
-          );
+          // keep only the last N changes (most recent)
+          const limit = Math.max(1, settings.maxNotifChanges || 5);
+          const hidden = Math.max(0, allowed.length - limit);
+          const shown = allowed.slice(-limit).map((c) => c.text);
+          if (hidden > 0) shown.unshift(`(+${hidden} thay đổi cũ hơn)`);
+
+          await recordUpdate(base, key, snap.title, shown, settings);
+          if (!quiet) {
+            const title = `${key} • ${snap.title}`.slice(0, 90);
+            const msg = shown.length === 1 ? shown[0] : shown.join("; ");
+            await notify(key, title, msg);
+          }
         }
 
         // auto-remove on end status
         if (isEndStatus(snap.status, settings.endStatuses)) {
           delete tracked[key];
+          await recordUpdate(
+            base,
+            key,
+            snap.title,
+            [`Đã gỡ — status: ${snap.status}`],
+            settings
+          );
           if (!quiet) {
             await notify(
               key,
@@ -321,10 +395,6 @@ async function pollNow(reason) {
               `Status: ${snap.status} — đã gỡ khỏi watch list`
             );
           }
-          await JT.pushHistory(
-            { key, title: snap.title, changes: [`Auto-removed (${snap.status})`] },
-            settings.historyDays
-          );
         }
       }
 
@@ -411,21 +481,21 @@ async function autoAddDiscover(base, me, settings, firstRun) {
       });
       added = true;
       // notify on genuine new assignment (not first run backfill, not quiet)
-      if (
-        !firstRun &&
-        s.src === "assigned" &&
-        settings.notify.assigned &&
-        !isQuiet(settings)
-      ) {
-        await notify(
+      if (!firstRun && s.src === "assigned" && settings.notify.assigned) {
+        await recordUpdate(
+          base,
           iss.key,
-          `${iss.key} • ${snap.title}`.slice(0, 90),
-          "Được assign cho bạn"
+          snap.title,
+          ["Được assign cho bạn"],
+          settings
         );
-        await JT.pushHistory(
-          { key: iss.key, title: snap.title, changes: ["Được assign cho bạn"] },
-          settings.historyDays
-        );
+        if (!isQuiet(settings)) {
+          await notify(
+            iss.key,
+            `${iss.key} • ${snap.title}`.slice(0, 90),
+            "Được assign cho bạn"
+          );
+        }
       }
     }
   }
@@ -577,11 +647,39 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ ok: true });
           break;
         }
+        case "markReadKey": {
+          const hist = await JT.getHistory();
+          let dec = 0;
+          for (const h of hist) {
+            if (h.key === msg.key && !h.read) {
+              h.read = true;
+              dec++;
+            }
+          }
+          if (dec) await JT.setLocal({ history: hist });
+          const stt = await JT.getState();
+          const unread = Math.max(0, (stt.unread || 0) - dec);
+          await JT.saveState({ unread });
+          updateBadge(unread);
+          sendResponse({ ok: true });
+          break;
+        }
         case "clearBadge":
+        case "markRead": {
+          const hist = await JT.getHistory();
+          let changed = false;
+          for (const h of hist) {
+            if (!h.read) {
+              h.read = true;
+              changed = true;
+            }
+          }
+          if (changed) await JT.setLocal({ history: hist });
           await JT.saveState({ unread: 0 });
           updateBadge(0);
           sendResponse({ ok: true });
           break;
+        }
         case "reconfigure":
           await setupAlarm();
           await ensureContentScript();
@@ -591,12 +689,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ ok: true });
           break;
         case "getStatus": {
-          const [settings, tracked, state] = await Promise.all([
+          const [settings, tracked, state, history] = await Promise.all([
             JT.getSettings(),
             JT.getTracked(),
             JT.getState(),
+            JT.getHistory(),
           ]);
-          sendResponse({ settings, tracked, state });
+          sendResponse({ settings, tracked, state, history });
           break;
         }
         default:

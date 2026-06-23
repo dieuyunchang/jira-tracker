@@ -46,9 +46,12 @@ Hoạt động **thuần local**: dùng chính session bạn đã đăng nhập 
   * L3S-215 Tên ticket
   ```
 
-**Thông báo**
+**Thông báo & tab Cập nhật**
 - Khi có thay đổi, Chrome bắn notification. Click vào → mở thẳng ticket.
-- Badge đỏ trên icon = số cập nhật chưa xem (mở popup là reset).
+- Badge đỏ trên icon = số cập nhật chưa xem.
+- Bấm icon → tab **🔔 Cập nhật**: liệt kê đúng ticket nào vừa đổi, **đổi cái gì** (status / assign / comment / mention) và lúc nào. Mục chưa đọc tô xanh. Click mã ticket → mở thẳng ticket.
+- Có nút chuyển **Chưa đọc / Tất cả** (Tất cả hiển thị tối đa 30 mục gần nhất) và nút **✓ Đã đọc hết** để xoá badge.
+- Click vào notification cũng tự đánh dấu đã đọc ticket đó và trừ badge.
 
 **Tự gỡ**: ticket chuyển sang `Done`, `Released`, `Ready for Production`… sẽ tự gỡ khỏi watch list (danh sách status chỉnh được trong Settings).
 

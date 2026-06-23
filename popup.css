@@ -60,10 +60,115 @@ body {
   color: #97a0af;
   cursor: default;
 }
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--sub);
+  font: inherit;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 6px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.tab.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+.tab .count {
+  display: none;
+  background: #d04437;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 11px;
+  margin-left: 2px;
+}
 .list {
   overflow-y: auto;
-  max-height: 400px;
+  max-height: 380px;
   padding: 4px 0 8px;
+}
+.utools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.seg-btn {
+  border: none;
+  background: #fff;
+  color: var(--sub);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.seg-btn.active {
+  background: var(--blue);
+  color: #fff;
+}
+.ghost-sm {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.ghost-sm:hover {
+  background: #f4f5f7;
+}
+#ulist {
+  max-height: 340px;
+}
+.urow {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f4f5f7;
+}
+.urow.unread {
+  background: #f4f8ff;
+  border-left: 3px solid var(--blue);
+}
+.urow-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.urow .utime {
+  color: #97a0af;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.urow .utitle {
+  color: var(--ink);
+  margin: 1px 0 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.urow .uchg {
+  color: var(--sub);
+  font-size: 12px;
 }
 .empty {
   color: var(--sub);

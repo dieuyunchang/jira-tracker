@@ -22,6 +22,8 @@
     $("n_assigned").checked = s.notify.assigned;
     $("n_comment").checked = s.notify.comment;
     $("n_mention").checked = s.notify.mention;
+    $("maxNotifChanges").value = s.maxNotifChanges;
+    $("commentIgnore").value = (s.commentIgnore || []).join("\n");
 
     $("a_assigned").checked = s.autoAdd.assigned;
     $("a_watcher").checked = s.autoAdd.watcher;
@@ -56,6 +58,11 @@
         watcher: $("a_watcher").checked,
         reporter: $("a_reporter").checked,
       },
+      maxNotifChanges: Math.max(1, parseInt($("maxNotifChanges").value, 10) || 5),
+      commentIgnore: $("commentIgnore")
+        .value.split("\n")
+        .map((x) => x.trim())
+        .filter(Boolean),
       autoAddLookbackDays: Math.max(1, parseInt($("lookback").value, 10) || 14),
       endStatuses: $("endStatuses")
         .value.split("\n")
