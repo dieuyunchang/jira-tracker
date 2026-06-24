@@ -30,6 +30,9 @@
     $("a_reporter").checked = s.autoAdd.reporter;
     $("lookback").value = s.autoAddLookbackDays;
 
+    $("historyCopyIncludeTitle").checked = !!s.historyCopyIncludeTitle;
+    $("visitsRetentionDays").value = s.visitsRetentionDays;
+
     $("endStatuses").value = (s.endStatuses || []).join("\n");
 
     $("pausedAutoProbe").checked = s.pausedAutoProbe;
@@ -64,6 +67,11 @@
         .map((x) => x.trim())
         .filter(Boolean),
       autoAddLookbackDays: Math.max(1, parseInt($("lookback").value, 10) || 14),
+      historyCopyIncludeTitle: $("historyCopyIncludeTitle").checked,
+      visitsRetentionDays: Math.min(
+        60,
+        Math.max(7, parseInt($("visitsRetentionDays").value, 10) || 30)
+      ),
       endStatuses: $("endStatuses")
         .value.split("\n")
         .map((x) => x.trim())

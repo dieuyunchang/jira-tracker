@@ -188,6 +188,22 @@
     </div>
 
     <div class="card">
+      <h2>History</h2>
+      <label class="row">
+        <input type="checkbox" id="historyCopyIncludeTitle" />
+        Bao gồm tên ticket khi Copy list
+      </label>
+      <div class="hint">
+        Tắt (mặc định): <code>KEY: note</code>. Bật: <code>KEY tên-ticket: note</code>.
+      </div>
+      <div class="field">
+        <label>Số ngày lưu lịch sử</label>
+        <input type="number" id="visitsRetentionDays" min="7" max="60" />
+        <div class="hint">7–60 ngày. Mặc định 30. Mục cũ hơn sẽ bị tự xoá.</div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Tự gỡ khi ticket kết thúc</h2>
       <div class="field">
         <label>Danh sách status coi là "kết thúc" (mỗi dòng 1 status)</label>

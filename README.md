@@ -7,6 +7,8 @@ Hoạt động **thuần local**: dùng chính session bạn đã đăng nhập 
 
 > Extension không gắn cứng URL Jira nào — bạn tự nhập URL công ty mình trong **Settings**.
 
+**Tính năng chính:** theo dõi ticket (tự thêm khi được assign), thông báo Chrome khi có thay đổi, tab **Cập nhật** xem ticket nào đổi gì, tab **History** ghi lại lượt xem kèm note + Copy list, tự tạm dừng khi mất VPN, bỏ qua hành động của chính bạn và comment nhiễu.
+
 ---
 
 ## Cài đặt (load unpacked)
@@ -53,6 +55,17 @@ Hoạt động **thuần local**: dùng chính session bạn đã đăng nhập 
 - Có nút chuyển **Chưa đọc / Tất cả** (Tất cả hiển thị tối đa 30 mục gần nhất) và nút **✓ Đã đọc hết** để xoá badge.
 - Click vào notification cũng tự đánh dấu đã đọc ticket đó và trừ badge.
 
+**Tab 🕘 History**
+- Mọi ticket bạn **mở/xem** được tự ghi vào đây, **nhóm theo ngày** (1 mục / ticket / ngày — cùng ticket xem nhiều ngày sẽ xuất hiện ở nhiều nhóm).
+- Mỗi mục có ô **note riêng** (ghi việc bạn làm hôm đó); note của cùng ticket ở mỗi ngày là độc lập.
+- **Copy list** (mỗi nhóm ngày) hoặc nút **⧉** (copy riêng 1 ticket) → copy kèm note:
+  - Mặc định: `KEY: note`
+  - Bật "bao gồm tên ticket": `KEY tên-ticket: note`
+  - Mục không có note thì chỉ `KEY` (hoặc `KEY tên-ticket`).
+- Nút `✕` để xoá 1 mục. Lịch sử tự xoá sau số ngày đặt trong Settings (7–60, mặc định 30).
+
+**Bỏ qua hành động của chính bạn**: nếu hoạt động mới nhất trên ticket là do bạn (tự comment / đổi status / tự assign…) thì xem như không có tin mới → không báo.
+
 **Tự gỡ**: ticket chuyển sang `Done`, `Released`, `Ready for Production`… sẽ tự gỡ khỏi watch list (danh sách status chỉnh được trong Settings).
 
 ---
@@ -61,7 +74,10 @@ Hoạt động **thuần local**: dùng chính session bạn đã đăng nhập 
 
 - **Jira base URL** + tần suất poll (mặc định 5 phút).
 - **Loại thông báo**: status / assigned / comment / mention — bật tắt riêng.
+- **Số thay đổi tối đa / 1 thông báo** (mặc định 5) — chỉ hiện N thay đổi mới nhất.
+- **Bỏ qua comment chứa text**: mỗi dòng 1 chuỗi; comment chứa chuỗi đó sẽ không báo (lọc bot/tích hợp như GitLab merge request).
 - **Tự động thêm**: assigned (bật), watcher (tắt), reporter (tắt) — mỗi cái 1 checkbox.
+- **History**: bật/tắt "bao gồm tên ticket" khi Copy list; số ngày lưu lịch sử (7–60, mặc định 30).
 - **Status kết thúc** để tự gỡ.
 - **VPN**: khi không vào được Jira → tự **tạm dừng**, chạy lại khi có 1 trang Jira load thành công. Có option "tự dò lại khi tạm dừng" (mặc định tắt).
 - **Quiet hours**, giới hạn số ticket, export/import backup.
@@ -94,3 +110,7 @@ Load unpacked không tự update. Khi có bản mới: `git pull` (hoặc thay f
 ## License
 
 MIT (xem `LICENSE` nếu có).
+
+---
+
+_tạo bởi Yunchang Dieu_

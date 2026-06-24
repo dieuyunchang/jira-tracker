@@ -225,11 +225,126 @@
   }
 
   function showTab(which) {
-    const isUpd = which === "updates";
-    $("list").hidden = isUpd;
-    $("updates").hidden = !isUpd;
-    $("tabList").classList.toggle("active", !isUpd);
-    $("tabUpdates").classList.toggle("active", isUpd);
+    $("list").hidden = which !== "list";
+    $("updates").hidden = which !== "updates";
+    $("history").hidden = which !== "history";
+    $("tabList").classList.toggle("active", which === "list");
+    $("tabUpdates").classList.toggle("active", which === "updates");
+    $("tabHistory").classList.toggle("active", which === "history");
+  }
+
+  function renderHistory(visits, includeTitle) {
+    const box = $("hlist");
+    box.innerHTML = "";
+    if (!visits || !visits.length) {
+      box.innerHTML = '<div class="empty">Chưa có lịch sử xem ticket nào.</div>';
+      return;
+    }
+    const arr = visits.slice().sort((a, b) => b.at - a.at);
+    const groups = [];
+    const idx = {};
+    for (const v of arr) {
+      const dk = v.day || JT.dayKey(v.at);
+      if (!(dk in idx)) {
+        idx[dk] = groups.length;
+        groups.push({ day: dk, label: JT.dayLabel(v.at), items: [] });
+      }
+      groups[idx[dk]].items.push(v);
+    }
+    for (const g of groups) {
+      const sec = document.createElement("div");
+      sec.className = "group";
+      const head = document.createElement("div");
+      head.className = "group-head";
+      head.innerHTML =
+        `<span class="group-label">${escapeHtml(g.label)}</span>` +
+        `<button class="copy" data-day="${escapeHtml(g.day)}">Copy list</button>`;
+      sec.appendChild(head);
+      for (const v of g.items) {
+        const row = document.createElement("div");
+        row.className = "hrow";
+        row.innerHTML =
+          `<div class="hrow-top">` +
+          `<a class="key" href="${escapeHtml(v.url)}">${escapeHtml(v.key)}</a>` +
+          `<span class="rtitle" title="${escapeHtml(v.title)}">${escapeHtml(
+            v.title
+          )}</span>` +
+          `<button class="hcopy" data-id="${escapeHtml(
+            v.id
+          )}" title="Copy ticket + note">⧉</button>` +
+          `<button class="rx" data-id="${escapeHtml(v.id)}" title="Xoá">✕</button>` +
+          `</div>` +
+          `<input class="note" data-id="${escapeHtml(
+            v.id
+          )}" placeholder="Thêm note cho lần xem này…" value="${escapeHtml(
+            v.note || ""
+          )}" />`;
+        sec.appendChild(row);
+      }
+      box.appendChild(sec);
+    }
+    box.querySelectorAll("a.key").forEach((a) =>
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        const h = a.getAttribute("href");
+        if (h) chrome.tabs.create({ url: h });
+      })
+    );
+    box.querySelectorAll("button.rx").forEach((b) =>
+      b.addEventListener("click", async () => {
+        await send({ cmd: "deleteVisit", id: b.dataset.id });
+        refresh();
+      })
+    );
+    box.querySelectorAll("input.note").forEach((inp) => {
+      const save = () => {
+        // keep the in-memory object in sync so Copy list uses the latest note
+        for (const g of groups) {
+          const hit = g.items.find((x) => x.id === inp.dataset.id);
+          if (hit) hit.note = inp.value;
+        }
+        send({ cmd: "setVisitNote", id: inp.dataset.id, note: inp.value });
+      };
+      inp.addEventListener("change", save);
+      inp.addEventListener("blur", save);
+    });
+    // build one copy line for a visit, reading the freshest note from the input
+    const lineFor = (v) => {
+      const inp = box.querySelector(`input.note[data-id="${v.id}"]`);
+      const note = (inp ? inp.value : v.note || "").trim();
+      let line = `${v.key}`;
+      if (includeTitle) line += ` ${v.title}`;
+      if (note) line += `: ${note}`;
+      return line;
+    };
+    const findVisit = (id) => {
+      for (const g of groups) {
+        const hit = g.items.find((x) => x.id === id);
+        if (hit) return hit;
+      }
+      return null;
+    };
+    async function copyText(text, n) {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast(n ? "Đã copy " + n + " ticket" : "Đã copy");
+      } catch (e) {
+        toast("Copy lỗi");
+      }
+    }
+
+    box.querySelectorAll("button.copy").forEach((b) =>
+      b.addEventListener("click", () => {
+        const g = groups.find((x) => x.day === b.dataset.day);
+        copyText(g.items.map(lineFor).join("\n"), g.items.length);
+      })
+    );
+    box.querySelectorAll("button.hcopy").forEach((b) =>
+      b.addEventListener("click", () => {
+        const v = findVisit(b.dataset.id);
+        if (v) copyText(lineFor(v), 0);
+      })
+    );
   }
 
   async function refresh() {
@@ -238,6 +353,10 @@
     renderStatus(res.state || {});
     renderList(res.tracked || {});
     renderUpdates(res.history || [], (res.settings && res.settings.jiraBase) || "");
+    renderHistory(
+      res.visits || [],
+      !!(res.settings && res.settings.historyCopyIncludeTitle)
+    );
     setTabCount((res.state && res.state.unread) || 0);
   }
 
@@ -263,6 +382,7 @@
     // tab switching
     $("tabList").addEventListener("click", () => showTab("list"));
     $("tabUpdates").addEventListener("click", () => showTab("updates"));
+    $("tabHistory").addEventListener("click", () => showTab("history"));
 
     // updates filter + mark-all-read
     $("fUnread").addEventListener("click", () => setFilter("unread"));

@@ -555,6 +555,64 @@ async function touchViewed(key) {
   }
 }
 
+// ---------------- visit history (with per-item notes) ----------------
+// One entry per (ticket, day). Not unique across days.
+
+async function recordVisit(key, url, title) {
+  const settings = await JT.getSettings();
+  const day = JT.dayKey(Date.now());
+  const id = key + "|" + day;
+  const { visits } = await JT.getLocal("visits");
+  let arr = visits || [];
+  const existing = arr.find((v) => v.id === id);
+  if (existing) {
+    existing.at = Date.now();
+    if (title) existing.title = title;
+    if (url) existing.url = url;
+  } else {
+    arr.push({
+      id,
+      key,
+      title: title || key,
+      url: url || JT.browseUrl(settings.jiraBase, key),
+      day,
+      at: Date.now(),
+      note: "",
+    });
+  }
+  const days = Math.min(60, Math.max(7, settings.visitsRetentionDays || 30));
+  const cutoff = Date.now() - days * 86400000;
+  arr = arr.filter((v) => v.at >= cutoff).slice(-2000);
+  await JT.setLocal({ visits: arr });
+}
+
+// Drop visit entries older than the retention window. Returns the kept list.
+async function pruneVisits(settings) {
+  const { visits } = await JT.getLocal("visits");
+  const arr = visits || [];
+  const days = Math.min(60, Math.max(7, settings.visitsRetentionDays || 30));
+  const cutoff = Date.now() - days * 86400000;
+  const kept = arr.filter((v) => v.at >= cutoff);
+  if (kept.length !== arr.length) await JT.setLocal({ visits: kept });
+  return kept;
+}
+
+async function setVisitNote(id, note) {
+  const { visits } = await JT.getLocal("visits");
+  const arr = visits || [];
+  const v = arr.find((x) => x.id === id);
+  if (v) {
+    v.note = note;
+    await JT.setLocal({ visits: arr });
+  }
+}
+
+async function deleteVisit(id) {
+  const { visits } = await JT.getLocal("visits");
+  const arr = (visits || []).filter((x) => x.id !== id);
+  await JT.setLocal({ visits: arr });
+}
+
 // ---------------- alarms & lifecycle ----------------
 
 async function setupAlarm() {
@@ -637,6 +695,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           break;
         case "ticketViewed":
           await touchViewed(msg.key);
+          await recordVisit(msg.key, msg.url, msg.title);
+          sendResponse({ ok: true });
+          break;
+        case "setVisitNote":
+          await setVisitNote(msg.id, msg.note || "");
+          sendResponse({ ok: true });
+          break;
+        case "deleteVisit":
+          await deleteVisit(msg.id);
           sendResponse({ ok: true });
           break;
         case "jiraPageLoaded": {
@@ -695,7 +762,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             JT.getState(),
             JT.getHistory(),
           ]);
-          sendResponse({ settings, tracked, state, history });
+          const visits = await pruneVisits(settings);
+          sendResponse({ settings, tracked, state, history, visits });
           break;
         }
         default:

@@ -246,6 +246,44 @@ body {
 .rx:hover {
   color: #de350b;
 }
+.hrow {
+  padding: 7px 12px 9px;
+  border-bottom: 1px solid #f4f5f7;
+}
+.hrow-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hrow .rtitle {
+  flex: 1;
+}
+.hrow .hcopy {
+  border: none;
+  background: transparent;
+  color: #6b778c;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+  line-height: 1;
+}
+.hrow .hcopy:hover {
+  color: var(--blue);
+}
+.hrow .note {
+  width: 100%;
+  margin-top: 5px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font: inherit;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+.hrow .note:focus {
+  outline: none;
+  border-color: var(--blue);
+}
 .ftr {
   display: flex;
   gap: 8px;

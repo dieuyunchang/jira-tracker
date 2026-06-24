@@ -17,10 +17,11 @@
     <button id="addPage" class="add-page" disabled>➕ Thêm page này</button>
 
     <div class="tabs">
-      <button id="tabList" class="tab active">📋 Watch list</button>
+      <button id="tabList" class="tab active">📋 Watch</button>
       <button id="tabUpdates" class="tab">
         🔔 Cập nhật<span id="tabCount" class="count"></span>
       </button>
+      <button id="tabHistory" class="tab">🕘 History</button>
     </div>
 
     <div id="list" class="list"></div>
@@ -34,6 +35,9 @@
         <button id="markAll" class="ghost-sm">✓ Đã đọc hết</button>
       </div>
       <div id="ulist" class="list"></div>
+    </div>
+    <div id="history" hidden>
+      <div id="hlist" class="list"></div>
     </div>
 
     <div class="ftr">

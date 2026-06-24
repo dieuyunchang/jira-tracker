@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Jira Ticket Tracker",
-  "version": "1.3.0",
+  "version": "1.4.4",
   "description": "Tự động theo dõi ticket Jira, báo thông báo khi có thay đổi (status, assign, comment, mention). Thuần local, dùng session đăng nhập sẵn.",
   "permissions": [
     "storage",

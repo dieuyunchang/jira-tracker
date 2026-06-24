@@ -100,11 +100,27 @@
     // 2) ticket detection
     const key = JT.parseKeyFromUrl(location.href);
     if (key) {
-      send({ cmd: "ticketViewed", key }); // bump lastViewed if tracked
+      // bump lastViewed (if tracked) + record a visit into History
+      send({ cmd: "ticketViewed", key, url: location.href, title: ticketTitle(key) });
+      // re-send shortly after to capture the title once the page finishes rendering
+      setTimeout(
+        () => send({ cmd: "ticketViewed", key, url: location.href, title: ticketTitle(key) }),
+        1500
+      );
       renderBanner(key);
     } else {
       removeBanner();
     }
+  }
+
+  // Best-effort ticket title from the page (e.g. "[L3S-21] Summary - Jira")
+  function ticketTitle(key) {
+    let t = document.title || "";
+    t = t.replace(/^\s*\[[^\]]+\]\s*/, ""); // drop "[KEY]" prefix
+    const i = t.lastIndexOf(" - ");
+    if (i > 0) t = t.slice(0, i); // drop " - Jira" suffix
+    t = t.trim();
+    return t || key;
   }
 
   function checkNav() {

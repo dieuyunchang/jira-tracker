@@ -50,8 +50,12 @@
     quietHours: { enabled: false, start: "20:00", end: "08:00" },
     // Cap on tracked tickets
     maxTracked: 100,
-    // history retention
+    // history (updates feed) retention
     historyDays: 14,
+    // visit-history retention in days (the "History" tab with notes). 7..60
+    visitsRetentionDays: 30,
+    // History "Copy list": include the ticket title? (default off -> "<key> <note>")
+    historyCopyIncludeTitle: false,
   };
 
   // ---- storage helpers ----
