@@ -17,11 +17,16 @@
     <button id="addPage" class="add-page" disabled>➕ Thêm page này</button>
 
     <div class="tabs">
-      <button id="tabList" class="tab active">📋 Watch</button>
-      <button id="tabUpdates" class="tab">
-        🔔 Cập nhật<span id="tabCount" class="count"></span>
+      <button id="tabList" class="tab active">
+        <span data-i18n="tab_watch">📋 Watch</span>
       </button>
-      <button id="tabHistory" class="tab">🕘 History</button>
+      <button id="tabUpdates" class="tab">
+        <span data-i18n="tab_updates">🔔 Cập nhật</span
+        ><span id="tabCount" class="count"></span>
+      </button>
+      <button id="tabHistory" class="tab">
+        <span data-i18n="tab_history">🕘 History</span>
+      </button>
     </div>
 
     <div id="list" class="list"></div>
@@ -29,10 +34,10 @@
     <div id="updates" hidden>
       <div class="utools">
         <div class="seg">
-          <button id="fUnread" class="seg-btn active">Chưa đọc</button>
-          <button id="fAll" class="seg-btn">Tất cả</button>
+          <button id="fUnread" class="seg-btn active" data-i18n="filter_unread">Chưa đọc</button>
+          <button id="fAll" class="seg-btn" data-i18n="filter_all">Tất cả</button>
         </div>
-        <button id="markAll" class="ghost-sm">✓ Đã đọc hết</button>
+        <button id="markAll" class="ghost-sm" data-i18n="mark_all_read">✓ Đã đọc hết</button>
       </div>
       <div id="ulist" class="list"></div>
     </div>
@@ -41,8 +46,8 @@
     </div>
 
     <div class="ftr">
-      <button id="pollNow" class="ghost">↻ Poll ngay</button>
-      <button id="openOptions" class="ghost">⚙️ Settings</button>
+      <button id="pollNow" class="ghost" data-i18n="poll_now">↻ Poll ngay</button>
+      <button id="openOptions" class="ghost" data-i18n="settings">⚙️ Settings</button>
     </div>
 
     <div id="toast" class="toast"></div>

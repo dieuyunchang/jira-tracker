@@ -2,6 +2,8 @@
 (function () {
   "use strict";
   const JT = self.JT;
+  let LANG = "vi";
+  const T = (k, vars) => JT.t(k, LANG, vars);
 
   function send(msg) {
     return new Promise((resolve) =>
@@ -35,13 +37,13 @@
     const el = $("status");
     el.className = "status";
     if (state.lastError === "setup") {
-      el.textContent = "● Chưa cấu hình — mở Settings";
+      el.textContent = T("status_setup");
       el.classList.add("warn");
     } else if (state.lastError === "auth") {
-      el.textContent = "● Cần đăng nhập Jira";
+      el.textContent = T("status_auth");
       el.classList.add("warn");
     } else if (state.paused) {
-      el.textContent = "● Tạm dừng (VPN?)";
+      el.textContent = T("status_paused");
       el.classList.add("paused");
     } else {
       const when = state.lastPollAt
@@ -50,7 +52,7 @@
             minute: "2-digit",
           })
         : "—";
-      el.textContent = "● Đang theo dõi · " + when;
+      el.textContent = T("status_watching", { time: when });
       el.classList.add("ok");
     }
   }
@@ -73,7 +75,7 @@
       const dk = JT.dayKey(t._v);
       if (!(dk in idx)) {
         idx[dk] = groups.length;
-        groups.push({ dayKey: dk, label: JT.dayLabel(t._v), items: [] });
+        groups.push({ dayKey: dk, label: JT.dayLabel(t._v, LANG), items: [] });
       }
       groups[idx[dk]].items.push(t);
     }
@@ -85,8 +87,7 @@
     list.innerHTML = "";
     const keys = Object.keys(tracked);
     if (!keys.length) {
-      list.innerHTML =
-        '<div class="empty">Chưa theo dõi ticket nào.<br>Mở 1 ticket Jira rồi bấm “Thêm page này”.</div>';
+      list.innerHTML = '<div class="empty">' + T("watch_empty") + "</div>";
       return;
     }
     const groups = groupByDay(tracked);
@@ -98,7 +99,7 @@
       head.className = "group-head";
       head.innerHTML =
         `<span class="group-label">${escapeHtml(g.label)}</span>` +
-        `<button class="copy" data-day="${g.dayKey}">Copy list</button>`;
+        `<button class="copy" data-day="${g.dayKey}">${T("copy_list")}</button>`;
       sec.appendChild(head);
 
       for (const t of g.items) {
@@ -111,7 +112,9 @@
           `<span class="rtitle" title="${escapeHtml(t.title)}">${escapeHtml(
             t.title
           )}</span>` +
-          `<button class="rx" data-key="${escapeHtml(t.key)}" title="Gỡ theo dõi">✕</button>`;
+          `<button class="rx" data-key="${escapeHtml(
+            t.key
+          )}" title="${escapeHtml(T("remove_title"))}">✕</button>`;
         sec.appendChild(row);
       }
       list.appendChild(sec);
@@ -139,9 +142,9 @@
         const text = items.map((t) => `* ${t.key} ${t.title}`).join("\n");
         try {
           await navigator.clipboard.writeText(text);
-          toast("Đã copy " + items.length + " ticket");
+          toast(T("copied_n", { n: items.length }));
         } catch (e) {
-          toast("Copy lỗi");
+          toast(T("copy_error"));
         }
       })
     );
@@ -157,8 +160,8 @@
     const today = JT.dayKey(Date.now());
     const yk = JT.dayKey(Date.now() - 86400000);
     const dk = JT.dayKey(ts);
-    if (dk === today) return "Hôm nay " + hm;
-    if (dk === yk) return "Hôm qua " + hm;
+    if (dk === today) return T("time_today") + " " + hm;
+    if (dk === yk) return T("time_yesterday") + " " + hm;
     return `${d.getDate()} ${MONTHS[d.getMonth()]} ${hm}`;
   }
 
@@ -177,7 +180,9 @@
     if (!items.length) {
       box.innerHTML =
         '<div class="empty">' +
-        (updFilter === "unread" ? "Không có mục chưa đọc." : "Chưa có cập nhật nào.") +
+        (updFilter === "unread"
+          ? T("updates_empty_unread")
+          : T("updates_empty_all")) +
         "</div>";
       return;
     }
@@ -237,7 +242,7 @@
     const box = $("hlist");
     box.innerHTML = "";
     if (!visits || !visits.length) {
-      box.innerHTML = '<div class="empty">Chưa có lịch sử xem ticket nào.</div>';
+      box.innerHTML = '<div class="empty">' + T("history_empty") + "</div>";
       return;
     }
     const arr = visits.slice().sort((a, b) => b.at - a.at);
@@ -247,7 +252,7 @@
       const dk = v.day || JT.dayKey(v.at);
       if (!(dk in idx)) {
         idx[dk] = groups.length;
-        groups.push({ day: dk, label: JT.dayLabel(v.at), items: [] });
+        groups.push({ day: dk, label: JT.dayLabel(v.at, LANG), items: [] });
       }
       groups[idx[dk]].items.push(v);
     }
@@ -258,7 +263,9 @@
       head.className = "group-head";
       head.innerHTML =
         `<span class="group-label">${escapeHtml(g.label)}</span>` +
-        `<button class="copy" data-day="${escapeHtml(g.day)}">Copy list</button>`;
+        `<button class="copy" data-day="${escapeHtml(g.day)}">${T(
+          "copy_list"
+        )}</button>`;
       sec.appendChild(head);
       for (const v of g.items) {
         const row = document.createElement("div");
@@ -271,14 +278,16 @@
           )}</span>` +
           `<button class="hcopy" data-id="${escapeHtml(
             v.id
-          )}" title="Copy ticket + note">⧉</button>` +
-          `<button class="rx" data-id="${escapeHtml(v.id)}" title="Xoá">✕</button>` +
+          )}" title="${escapeHtml(T("copy_item_title"))}">⧉</button>` +
+          `<button class="rx" data-id="${escapeHtml(
+            v.id
+          )}" title="${escapeHtml(T("delete_title"))}">✕</button>` +
           `</div>` +
           `<input class="note" data-id="${escapeHtml(
             v.id
-          )}" placeholder="Thêm note cho lần xem này…" value="${escapeHtml(
-            v.note || ""
-          )}" />`;
+          )}" placeholder="${escapeHtml(
+            T("note_placeholder")
+          )}" value="${escapeHtml(v.note || "")}" />`;
         sec.appendChild(row);
       }
       box.appendChild(sec);
@@ -327,9 +336,9 @@
     async function copyText(text, n) {
       try {
         await navigator.clipboard.writeText(text);
-        toast(n ? "Đã copy " + n + " ticket" : "Đã copy");
+        toast(n ? T("copied_n", { n }) : T("copied"));
       } catch (e) {
-        toast("Copy lỗi");
+        toast(T("copy_error"));
       }
     }
 
@@ -350,6 +359,8 @@
   async function refresh() {
     const res = await send({ cmd: "getStatus" });
     if (!res) return;
+    LANG = (res.settings && res.settings.lang) || "vi";
+    JT.applyDom(document, LANG);
     renderStatus(res.state || {});
     renderList(res.tracked || {});
     renderUpdates(res.history || [], (res.settings && res.settings.jiraBase) || "");
@@ -389,12 +400,14 @@
     $("fAll").addEventListener("click", () => setFilter("all"));
     $("markAll").addEventListener("click", async () => {
       await send({ cmd: "markRead" });
-      toast("Đã đánh dấu đã đọc hết");
+      toast(T("marked_all_read"));
       refresh();
     });
 
     // "Thêm page này" — active only on a ticket page of the CONFIGURED Jira host
     const st = await send({ cmd: "getStatus" });
+    LANG = (st && st.settings && st.settings.lang) || "vi";
+    JT.applyDom(document, LANG);
     const jiraBase = (st && st.settings && st.settings.jiraBase) || "";
     const cfgOrigin = JT.isConfigured(jiraBase)
       ? (function () {
@@ -421,7 +434,7 @@
     } else if (key) {
       addBtn.hidden = false;
       addBtn.disabled = false;
-      addBtn.textContent = `➕ Thêm ${key}`;
+      addBtn.textContent = T("add_ticket", { key });
       addBtn.addEventListener("click", async () => {
         await send({
           cmd: "addTicket",
@@ -429,18 +442,18 @@
           url: tab.url,
           viewedAt: Date.now(),
         });
-        toast("Đã thêm " + key);
+        toast(T("added_ticket", { key }));
         addBtn.hidden = true;
         refresh();
       });
     } else {
       addBtn.hidden = false;
       addBtn.disabled = true;
-      addBtn.textContent = "➕ Thêm page này (mở 1 ticket trước)";
+      addBtn.textContent = T("add_page_default");
     }
 
     $("pollNow").addEventListener("click", async () => {
-      toast("Đang poll…");
+      toast(T("polling"));
       await send({ cmd: "pollNow" });
       refresh();
     });

@@ -133,126 +133,124 @@
     <h1><img src="icons/icon32.png" width="22" height="22" alt="" /> Jira Tracker — Settings</h1>
 
     <div class="card">
-      <h2>Kết nối & tần suất</h2>
       <div class="field">
-        <label>Jira base URL</label>
+        <label data-i18n="opt_lang">Ngôn ngữ / Language</label>
+        <select id="lang">
+          <option value="vi">Tiếng Việt</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="opt_conn">Kết nối & tần suất</h2>
+      <div class="field">
+        <label data-i18n="opt_base">Jira base URL</label>
         <input type="text" id="jiraBase" placeholder="https://jira.company.xyz" />
-        <div class="hint">
-          Nhập URL Jira công ty bạn (vd <code>https://jira.company.xyz</code>).
-          Khi bấm <b>Lưu</b>, Chrome sẽ hỏi cấp quyền truy cập host này — chọn
-          <b>Allow</b> để extension hoạt động.
-        </div>
+        <div class="hint" data-i18n="opt_base_hint"></div>
       </div>
       <div class="field">
-        <label>Tần suất poll (phút)</label>
+        <label data-i18n="opt_poll">Tần suất poll (phút)</label>
         <input type="number" id="pollMinutes" min="1" max="120" />
-        <div class="hint">Tối thiểu 1 phút. Mặc định 5.</div>
+        <div class="hint" data-i18n="opt_poll_hint"></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Thông báo loại nào</h2>
-      <label class="row"><input type="checkbox" id="n_status" /> Đổi status</label>
-      <label class="row"><input type="checkbox" id="n_assigned" /> Được assign cho tôi</label>
-      <label class="row"><input type="checkbox" id="n_comment" /> Comment mới</label>
-      <label class="row"><input type="checkbox" id="n_mention" /> Bị tag tên (mention)</label>
+      <h2 data-i18n="opt_notif">Thông báo loại nào</h2>
+      <label class="row"><input type="checkbox" id="n_status" /> <span data-i18n="opt_n_status"></span></label>
+      <label class="row"><input type="checkbox" id="n_assigned" /> <span data-i18n="opt_n_assigned"></span></label>
+      <label class="row"><input type="checkbox" id="n_comment" /> <span data-i18n="opt_n_comment"></span></label>
+      <label class="row"><input type="checkbox" id="n_mention" /> <span data-i18n="opt_n_mention"></span></label>
       <div class="field">
-        <label>Số thay đổi tối đa hiển thị trong 1 thông báo</label>
+        <label data-i18n="opt_maxchanges">Số thay đổi tối đa</label>
         <input type="number" id="maxNotifChanges" min="1" max="20" />
-        <div class="hint">Chỉ hiện N thay đổi mới nhất. Mặc định 5.</div>
+        <div class="hint" data-i18n="opt_maxchanges_hint"></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Bỏ qua comment chứa text</h2>
+      <h2 data-i18n="opt_ignore_h">Bỏ qua comment chứa text</h2>
       <div class="field">
-        <label>Mỗi dòng 1 chuỗi — comment chứa chuỗi này sẽ KHÔNG báo</label>
+        <label data-i18n="opt_ignore_lbl"></label>
         <textarea id="commentIgnore" placeholder="mentioned this issue in a merge request of"></textarea>
-        <div class="hint">
-          Khớp không phân biệt hoa thường, so theo "chứa". Dùng để bỏ qua comment
-          tự động từ bot/tích hợp (vd GitLab merge request).
-        </div>
+        <div class="hint" data-i18n="opt_ignore_hint"></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Tự động thêm vào watch list</h2>
-      <label class="row"><input type="checkbox" id="a_assigned" /> Ticket được assign cho tôi</label>
-      <label class="row"><input type="checkbox" id="a_watcher" /> Ticket tôi là watcher</label>
-      <label class="row"><input type="checkbox" id="a_reporter" /> Ticket tôi là reporter</label>
+      <h2 data-i18n="opt_autoadd">Tự động thêm vào watch list</h2>
+      <label class="row"><input type="checkbox" id="a_assigned" /> <span data-i18n="opt_a_assigned"></span></label>
+      <label class="row"><input type="checkbox" id="a_watcher" /> <span data-i18n="opt_a_watcher"></span></label>
+      <label class="row"><input type="checkbox" id="a_reporter" /> <span data-i18n="opt_a_reporter"></span></label>
       <div class="field">
-        <label>Chỉ tự thêm ticket cập nhật trong vòng (ngày)</label>
+        <label data-i18n="opt_lookback"></label>
         <input type="number" id="lookback" min="1" max="90" />
-        <div class="hint">Tránh kéo về quá nhiều ticket cũ. Mặc định 14.</div>
+        <div class="hint" data-i18n="opt_lookback_hint"></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>History</h2>
+      <h2 data-i18n="opt_history">History</h2>
       <label class="row">
         <input type="checkbox" id="historyCopyIncludeTitle" />
-        Bao gồm tên ticket khi Copy list
+        <span data-i18n="opt_copytitle"></span>
       </label>
-      <div class="hint">
-        Tắt (mặc định): <code>KEY: note</code>. Bật: <code>KEY tên-ticket: note</code>.
-      </div>
+      <div class="hint" data-i18n="opt_copytitle_hint"></div>
       <div class="field">
-        <label>Số ngày lưu lịch sử</label>
+        <label data-i18n="opt_retention">Số ngày lưu lịch sử</label>
         <input type="number" id="visitsRetentionDays" min="7" max="60" />
-        <div class="hint">7–60 ngày. Mặc định 30. Mục cũ hơn sẽ bị tự xoá.</div>
+        <div class="hint" data-i18n="opt_retention_hint"></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Tự gỡ khi ticket kết thúc</h2>
+      <h2 data-i18n="opt_endstatus_h">Tự gỡ khi ticket kết thúc</h2>
       <div class="field">
-        <label>Danh sách status coi là "kết thúc" (mỗi dòng 1 status)</label>
+        <label data-i18n="opt_endstatus_lbl"></label>
         <textarea id="endStatuses"></textarea>
-        <div class="hint">Khớp không phân biệt hoa thường. Ví dụ: Done, Released…</div>
+        <div class="hint" data-i18n="opt_endstatus_hint"></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>VPN / mạng</h2>
+      <h2 data-i18n="opt_vpn">VPN / mạng</h2>
       <label class="row">
         <input type="checkbox" id="pausedAutoProbe" />
-        Tự dò lại khi đang tạm dừng (VPN off)
+        <span data-i18n="opt_probe"></span>
       </label>
-      <div class="hint">
-        Mặc định TẮT — chỉ chạy lại khi có 1 trang Jira load thành công. Bật thì
-        thêm 1 nhịp dò thưa:
-      </div>
+      <div class="hint" data-i18n="opt_probe_hint"></div>
       <div class="field">
-        <label>Nhịp dò khi tạm dừng (phút)</label>
+        <label data-i18n="opt_probemin">Nhịp dò khi tạm dừng (phút)</label>
         <input type="number" id="probeMinutes" min="5" max="180" />
       </div>
     </div>
 
     <div class="card">
-      <h2>Quiet hours (không báo ngoài giờ)</h2>
-      <label class="row"><input type="checkbox" id="q_enabled" /> Bật quiet hours</label>
+      <h2 data-i18n="opt_quiet">Quiet hours</h2>
+      <label class="row"><input type="checkbox" id="q_enabled" /> <span data-i18n="opt_quiet_enable"></span></label>
       <div class="inline">
-        <div class="field"><label>Từ</label><input type="time" id="q_start" /></div>
-        <div class="field"><label>Đến</label><input type="time" id="q_end" /></div>
+        <div class="field"><label data-i18n="opt_from">Từ</label><input type="time" id="q_start" /></div>
+        <div class="field"><label data-i18n="opt_to">Đến</label><input type="time" id="q_end" /></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Khác</h2>
+      <h2 data-i18n="opt_other">Khác</h2>
       <div class="inline">
-        <div class="field"><label>Giới hạn số ticket track</label><input type="number" id="maxTracked" min="10" max="500" /></div>
-        <div class="field"><label>Giữ lịch sử (ngày)</label><input type="number" id="historyDays" min="1" max="90" /></div>
+        <div class="field"><label data-i18n="opt_maxtracked">Giới hạn số ticket track</label><input type="number" id="maxTracked" min="10" max="500" /></div>
+        <div class="field"><label data-i18n="opt_histdays">Giữ lịch sử (ngày)</label><input type="number" id="historyDays" min="1" max="90" /></div>
       </div>
       <div class="field">
-        <button class="ghost" id="exportBtn">⬇ Export (backup)</button>
-        <button class="ghost" id="importBtn">⬆ Import</button>
+        <button class="ghost" id="exportBtn" data-i18n="opt_export">⬇ Export (backup)</button>
+        <button class="ghost" id="importBtn" data-i18n="opt_import">⬆ Import</button>
         <input type="file" id="importFile" accept="application/json" style="display:none" />
       </div>
     </div>
 
     <div class="actions">
-      <button class="primary" id="save">Lưu</button>
-      <span id="saved">✓ Đã lưu</span>
+      <button class="primary" id="save" data-i18n="opt_save">Lưu</button>
+      <span id="saved"></span>
     </div>
 
     <div class="credit">tạo bởi Yunchang Dieu</div>

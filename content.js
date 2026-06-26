@@ -48,23 +48,27 @@
     const isTracked = !!tracked[key];
     if (!isTracked && dismissed[key]) return; // user said don't ask again
 
+    const settings = await JT.getSettings();
+    const lang = settings.lang;
+    const T = (k) => JT.t(k, lang);
+
     const el = document.createElement("div");
     el.className = "jt-banner";
     if (isTracked) {
       el.innerHTML = `
         <span class="jt-dot jt-on"></span>
         <span class="jt-key">${key}</span>
-        <span class="jt-msg">đang được theo dõi</span>
-        <button class="jt-btn jt-remove">Gỡ theo dõi</button>
-        <button class="jt-x" title="Đóng">✕</button>`;
+        <span class="jt-msg">${T("banner_watching")}</span>
+        <button class="jt-btn jt-remove">${T("banner_unwatch")}</button>
+        <button class="jt-x">✕</button>`;
     } else {
       el.innerHTML = `
         <span class="jt-dot"></span>
         <span class="jt-key">${key}</span>
-        <span class="jt-msg">Theo dõi ticket này?</span>
-        <button class="jt-btn jt-add">➕ Theo dõi</button>
-        <button class="jt-link jt-never">Đừng hỏi lại</button>
-        <button class="jt-x" title="Bỏ qua">✕</button>`;
+        <span class="jt-msg">${T("banner_ask")}</span>
+        <button class="jt-btn jt-add">${T("banner_watch")}</button>
+        <button class="jt-link jt-never">${T("banner_never")}</button>
+        <button class="jt-x">✕</button>`;
     }
     document.documentElement.appendChild(el);
     bannerEl = el;

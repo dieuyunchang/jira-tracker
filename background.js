@@ -315,7 +315,7 @@ async function pollNow(reason) {
           snap.assignee === me.name &&
           prev.assignee !== me.name
         ) {
-          changes.push({ type: "assigned", text: `Được assign cho bạn` });
+          changes.push({ type: "assigned", text: JT.t("n_assigned", settings.lang) });
         }
 
         // comments / mentions (from detailed fetch)
@@ -329,7 +329,8 @@ async function pollNow(reason) {
             const cid = parseInt(c.id, 10);
             if (isNaN(cid) || cid <= prev.lastCommentId) continue;
             const author =
-              (c.author && (c.author.displayName || c.author.name)) || "Ai đó";
+              (c.author && (c.author.displayName || c.author.name)) ||
+              JT.t("author_unknown", settings.lang);
             const body = c.body || "";
             // skip noisy comments matching user-defined ignore substrings
             const lowBody = body.toLowerCase();
@@ -346,12 +347,12 @@ async function pollNow(reason) {
             if (mentionsMe) {
               changes.push({
                 type: "mention",
-                text: `${author} nhắc tới bạn`,
+                text: JT.t("n_mention", settings.lang, { who: author }),
               });
             } else {
               changes.push({
                 type: "comment",
-                text: `Comment mới từ ${author}`,
+                text: JT.t("n_comment_from", settings.lang, { who: author }),
               });
             }
           }
@@ -368,7 +369,8 @@ async function pollNow(reason) {
           const limit = Math.max(1, settings.maxNotifChanges || 5);
           const hidden = Math.max(0, allowed.length - limit);
           const shown = allowed.slice(-limit).map((c) => c.text);
-          if (hidden > 0) shown.unshift(`(+${hidden} thay đổi cũ hơn)`);
+          if (hidden > 0)
+            shown.unshift(JT.t("n_more_changes", settings.lang, { n: hidden }));
 
           await recordUpdate(base, key, snap.title, shown, settings);
           if (!quiet) {
@@ -385,14 +387,14 @@ async function pollNow(reason) {
             base,
             key,
             snap.title,
-            [`Đã gỡ — status: ${snap.status}`],
+            [JT.t("n_removed_status", settings.lang, { status: snap.status })],
             settings
           );
           if (!quiet) {
             await notify(
               key,
               `${key} • ${snap.title}`.slice(0, 90),
-              `Status: ${snap.status} — đã gỡ khỏi watch list`
+              JT.t("n_removed_full", settings.lang, { status: snap.status })
             );
           }
         }
@@ -436,8 +438,8 @@ async function handlePollError(err, settings) {
     chrome.notifications.create("jt-auth", {
       type: "basic",
       iconUrl: "icons/icon128.png",
-      title: "Jira Tracker — cần đăng nhập lại",
-      message: "Phiên Jira đã hết. Mở Jira và đăng nhập lại để tiếp tục theo dõi.",
+      title: JT.t("auth_title", settings.lang),
+      message: JT.t("auth_msg", settings.lang),
       priority: 1,
     });
   } else {
@@ -486,14 +488,14 @@ async function autoAddDiscover(base, me, settings, firstRun) {
           base,
           iss.key,
           snap.title,
-          ["Được assign cho bạn"],
+          [JT.t("n_assigned", settings.lang)],
           settings
         );
         if (!isQuiet(settings)) {
           await notify(
             iss.key,
             `${iss.key} • ${snap.title}`.slice(0, 90),
-            "Được assign cho bạn"
+            JT.t("n_assigned", settings.lang)
           );
         }
       }

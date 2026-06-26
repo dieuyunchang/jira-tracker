@@ -15,6 +15,8 @@
 
   async function load() {
     const s = await JT.getSettings();
+    $("lang").value = s.lang === "en" ? "en" : "vi";
+    JT.applyDom(document, s.lang);
     $("jiraBase").value = s.jiraBase;
     $("pollMinutes").value = s.pollMinutes;
 
@@ -48,6 +50,7 @@
 
   function collect() {
     return {
+      lang: $("lang").value === "en" ? "en" : "vi",
       jiraBase: $("jiraBase").value.trim() || "https://jira.company.xyz",
       pollMinutes: Math.max(1, parseInt($("pollMinutes").value, 10) || 5),
       notify: {
@@ -91,9 +94,10 @@
   async function save() {
     const cfg = collect();
     const el = $("saved");
+    const L = cfg.lang;
 
     if (!JT.isConfigured(cfg.jiraBase)) {
-      el.textContent = "⚠ Hãy nhập đúng Jira base URL của bạn trước";
+      el.textContent = JT.t("opt_msg_needurl", L);
       el.style.color = "#de350b";
       el.classList.add("show");
       setTimeout(() => el.classList.remove("show"), 2500);
@@ -114,8 +118,8 @@
 
     el.style.color = granted ? "#36b37e" : "#ff8b00";
     el.textContent = granted
-      ? "✓ Đã lưu & cấp quyền truy cập Jira"
-      : "✓ Đã lưu — nhưng CHƯA cấp quyền. Bấm Lưu lại và chọn Allow.";
+      ? JT.t("opt_msg_saved_granted", L)
+      : JT.t("opt_msg_saved_nogrant", L);
     el.classList.add("show");
     setTimeout(() => el.classList.remove("show"), granted ? 1800 : 4000);
   }
@@ -157,15 +161,18 @@
       }
       await send({ cmd: "reconfigure" });
       await load();
-      alert("Đã import xong.");
+      alert(JT.t("opt_msg_import_ok", $("lang").value));
     } catch (err) {
-      alert("File không hợp lệ: " + err);
+      alert(JT.t("opt_msg_import_bad", $("lang").value) + err);
     }
     e.target.value = "";
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     load();
+    $("lang").addEventListener("change", () =>
+      JT.applyDom(document, $("lang").value)
+    );
     $("save").addEventListener("click", save);
     $("exportBtn").addEventListener("click", exportData);
     $("importBtn").addEventListener("click", importData);

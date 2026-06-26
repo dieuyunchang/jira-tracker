@@ -1,116 +1,119 @@
 # Jira Ticket Tracker — Chrome Extension
 
-Tự động theo dõi ticket Jira và bắn thông báo Chrome khi có thay đổi:
-**đổi status**, **được assign cho bạn**, **comment mới**, **bị tag tên (mention)**.
+🌐 [Tiếng Việt](README.vn.md) | **English**
 
-Hoạt động **thuần local**: dùng chính session bạn đã đăng nhập Jira trên browser để gọi REST API ngầm — **không cần API token, không cần quyền admin**. Mọi dữ liệu lưu trên máy bạn, không gửi đi đâu.
+Automatically tracks your Jira tickets and fires Chrome notifications on changes:
+**status change**, **assigned to you**, **new comment**, **mentioned (tag)**.
 
-> Extension không gắn cứng URL Jira nào — bạn tự nhập URL công ty mình trong **Settings**.
+Runs **fully local**: it uses your existing logged-in Jira session in the browser to call the REST API in the background — **no API token, no admin rights required**. All data stays on your machine and is never sent anywhere.
 
-**Tính năng chính:** theo dõi ticket (tự thêm khi được assign), thông báo Chrome khi có thay đổi, tab **Cập nhật** xem ticket nào đổi gì, tab **History** ghi lại lượt xem kèm note + Copy list, tự tạm dừng khi mất VPN, bỏ qua hành động của chính bạn và comment nhiễu.
+> The extension is not hard-wired to any Jira URL — you enter your company URL in **Settings**.
 
----
-
-## Cài đặt (load unpacked)
-
-1. Tải / clone repo này về máy.
-2. Mở Chrome → vào `chrome://extensions`.
-3. Bật **Developer mode** (góc trên bên phải).
-4. Bấm **Load unpacked** → chọn folder `jira-tracker`.
-5. Ghim icon extension cho tiện.
-
-## Cấu hình (bắt buộc lần đầu)
-
-1. Chuột phải icon extension → **Options** (hoặc mở popup → **⚙️ Settings**).
-2. Nhập **Jira base URL** của công ty bạn, ví dụ `https://jira.company.xyz`.
-3. Bấm **Lưu** → Chrome sẽ hỏi cấp quyền truy cập host đó → chọn **Allow**.
-4. Đảm bảo bạn **đang đăng nhập Jira** trên browser (bật VPN nếu cần).
-
-> Quyền truy cập chỉ cấp cho đúng host Jira bạn nhập, không phải toàn bộ web.
-> Load unpacked nên Chrome có thể nhắc "tắt extension developer" mỗi lần mở — giữ lại là được.
+**Key features:** track tickets (auto-add when assigned to you), Chrome notifications on changes, an **Updates** tab showing which ticket changed and what, a **History** tab logging your views with per-item notes + Copy list, auto-pause when VPN drops, and skipping your own actions and noisy comments.
 
 ---
 
-## Cách dùng
+## Install (load unpacked)
 
-**Thêm ticket để theo dõi**
-- Mở 1 ticket bất kỳ (vd `https://<jira-cua-ban>/browse/EJAR-18937`) → banner góc phải hiện **➕ Theo dõi**.
-- Hoặc bấm icon extension → **➕ Thêm page này**.
-- Ngoài ra: ticket được **assign cho bạn** sẽ tự thêm (bật/tắt trong Settings).
+1. Download / clone this repo.
+2. Open Chrome → go to `chrome://extensions`.
+3. Enable **Developer mode** (top-right).
+4. Click **Load unpacked** → select the `jira-tracker` folder.
+5. Pin the extension icon for convenience.
 
-**Watch list** (bấm icon extension)
-- Hiện mã ticket, nhóm theo ngày xem (`Today`, `Yesterday`, …), mới nhất lên trên.
-- Click mã ticket → mở tab mới.
-- Nút `✕` → gỡ theo dõi.
-- **Copy list** (mỗi nhóm ngày) → copy ra clipboard dạng:
+## Configure (required on first run)
+
+1. Right-click the extension icon → **Options** (or open the popup → **⚙️ Settings**).
+2. Enter your company **Jira base URL**, e.g. `https://jira.company.xyz`.
+3. Click **Save** → Chrome asks for permission to access that host → choose **Allow**.
+4. Make sure you are **logged into Jira** in the browser (turn on VPN if needed).
+
+> The permission is granted only for the exact Jira host you enter, not the whole web.
+> Because it's loaded unpacked, Chrome may prompt to "disable developer extensions" on each launch — just keep it.
+
+---
+
+## Usage
+
+**Add a ticket to track**
+- Open any ticket (e.g. `https://<your-jira>/browse/EJAR-18937`) → a banner appears top-right with **➕ Track**.
+- Or click the extension icon → **➕ Add this page**.
+- Also: tickets **assigned to you** are added automatically (toggle in Settings).
+
+**Watch list** (click the extension icon)
+- Shows ticket keys, grouped by view date (`Today`, `Yesterday`, …), newest on top.
+- Click a key → open in a new tab.
+- `✕` → unwatch.
+- **Copy list** (per day group) → copies to clipboard as:
   ```
-  * EJAR-123 Tên ticket
-  * L3S-215 Tên ticket
+  * EJAR-123 Ticket title
+  * L3S-215 Ticket title
   ```
 
-**Thông báo & tab Cập nhật**
-- Khi có thay đổi, Chrome bắn notification. Click vào → mở thẳng ticket.
-- Badge đỏ trên icon = số cập nhật chưa xem.
-- Bấm icon → tab **🔔 Cập nhật**: liệt kê đúng ticket nào vừa đổi, **đổi cái gì** (status / assign / comment / mention) và lúc nào. Mục chưa đọc tô xanh. Click mã ticket → mở thẳng ticket.
-- Có nút chuyển **Chưa đọc / Tất cả** (Tất cả hiển thị tối đa 30 mục gần nhất) và nút **✓ Đã đọc hết** để xoá badge.
-- Click vào notification cũng tự đánh dấu đã đọc ticket đó và trừ badge.
+**Notifications & the Updates tab**
+- On any change, Chrome fires a notification. Click it → opens the ticket directly.
+- The red badge on the icon = number of unread updates.
+- Click the icon → **🔔 Updates** tab: lists exactly which ticket changed, **what changed** (status / assign / comment / mention) and when. Unread items are highlighted. Click a key → open the ticket.
+- A **Unread / All** toggle (All shows up to the 30 most recent) and a **✓ Mark all read** button to clear the badge.
+- Clicking a notification also marks that ticket read and decrements the badge.
 
-**Tab 🕘 History**
-- Mọi ticket bạn **mở/xem** được tự ghi vào đây, **nhóm theo ngày** (1 mục / ticket / ngày — cùng ticket xem nhiều ngày sẽ xuất hiện ở nhiều nhóm).
-- Mỗi mục có ô **note riêng** (ghi việc bạn làm hôm đó); note của cùng ticket ở mỗi ngày là độc lập.
-- **Copy list** (mỗi nhóm ngày) hoặc nút **⧉** (copy riêng 1 ticket) → copy kèm note:
-  - Mặc định: `KEY: note`
-  - Bật "bao gồm tên ticket": `KEY tên-ticket: note`
-  - Mục không có note thì chỉ `KEY` (hoặc `KEY tên-ticket`).
-- Nút `✕` để xoá 1 mục. Lịch sử tự xoá sau số ngày đặt trong Settings (7–60, mặc định 30).
+**🕘 History tab**
+- Every ticket you **open/view** is logged here, **grouped by day** (one item per ticket per day — the same ticket viewed on multiple days appears in multiple groups).
+- Each item has its own **note** field (what you worked on that day); notes for the same ticket on different days are independent.
+- **Copy list** (per day group) or the **⧉** button (copy a single ticket) → copies with the note:
+  - Default: `KEY: note`
+  - With "include ticket title" on: `KEY ticket-title: note`
+  - Items without a note are just `KEY` (or `KEY ticket-title`).
+- `✕` removes a single item. History is auto-deleted after the number of days set in Settings (7–60, default 30).
 
-**Bỏ qua hành động của chính bạn**: nếu hoạt động mới nhất trên ticket là do bạn (tự comment / đổi status / tự assign…) thì xem như không có tin mới → không báo.
+**Skip your own actions**: if the most recent activity on a ticket was done by you (your own comment / status change / self-assign…) it's treated as not-new → no notification.
 
-**Tự gỡ**: ticket chuyển sang `Done`, `Released`, `Ready for Production`… sẽ tự gỡ khỏi watch list (danh sách status chỉnh được trong Settings).
+**Auto-remove**: tickets moved to `Done`, `Released`, `Ready for Production`… are auto-removed from the watch list (the finished-status list is configurable in Settings).
 
 ---
 
 ## Settings
 
-- **Jira base URL** + tần suất poll (mặc định 5 phút).
-- **Loại thông báo**: status / assigned / comment / mention — bật tắt riêng.
-- **Số thay đổi tối đa / 1 thông báo** (mặc định 5) — chỉ hiện N thay đổi mới nhất.
-- **Bỏ qua comment chứa text**: mỗi dòng 1 chuỗi; comment chứa chuỗi đó sẽ không báo (lọc bot/tích hợp như GitLab merge request).
-- **Tự động thêm**: assigned (bật), watcher (tắt), reporter (tắt) — mỗi cái 1 checkbox.
-- **History**: bật/tắt "bao gồm tên ticket" khi Copy list; số ngày lưu lịch sử (7–60, mặc định 30).
-- **Status kết thúc** để tự gỡ.
-- **VPN**: khi không vào được Jira → tự **tạm dừng**, chạy lại khi có 1 trang Jira load thành công. Có option "tự dò lại khi tạm dừng" (mặc định tắt).
-- **Quiet hours**, giới hạn số ticket, export/import backup.
+- **Language / Ngôn ngữ**: English or Vietnamese (switches the whole UI + notification text).
+- **Jira base URL** + poll frequency (default 5 minutes).
+- **Notification types**: status / assigned / comment / mention — toggle each.
+- **Max changes per notification** (default 5) — show only the latest N changes.
+- **Ignore comments containing text**: one substring per line; comments containing it won't notify (filters bots/integrations like GitLab merge requests).
+- **Auto-add**: assigned (on), watcher (off), reporter (off) — one checkbox each.
+- **History**: toggle "include ticket title" in Copy list; retention days (7–60, default 30).
+- **Finished statuses** for auto-remove.
+- **VPN**: when Jira is unreachable → auto **pause**, resume when a Jira page loads successfully. Optional "auto-retry while paused" (off by default).
+- **Quiet hours**, max tracked tickets, export/import backup.
 
 ---
 
-## Hành vi mạng / VPN / sleep
+## Network / VPN / sleep behavior
 
-- **VPN off / không vào được Jira** → dừng poll (không spam lỗi). Mở 1 trang Jira thành công → tự chạy lại.
-- **Hết phiên đăng nhập** → 1 thông báo nhắc đăng nhập lại Jira.
-- **Máy sleep** → không poll; mở máy lại chạy tiếp ở chu kỳ kế tiếp.
-
----
-
-## Cập nhật phiên bản
-
-Load unpacked không tự update. Khi có bản mới: `git pull` (hoặc thay folder) rồi vào `chrome://extensions` bấm **Reload** ở extension này.
+- **VPN off / Jira unreachable** → stop polling (no error spam). Open a Jira page successfully → auto-resume.
+- **Session expired** → a single notification asking you to log into Jira again.
+- **Machine asleep** → no polling; resumes on the next cycle after waking.
 
 ---
 
-## Ghi chú kỹ thuật
+## Updating
 
-- Yêu cầu Jira **Server / Data Center** có REST API v2 truy cập được bằng cookie session
-  (thử mở `https://<jira-cua-ban>/rest/api/2/myself` — nếu ra JSON là chạy được).
-- Mention phát hiện theo `[~username]` trong comment, cộng fallback theo display name.
-- Extension gọi REST API nội bộ bằng session của chính bạn (giống bạn tự refresh trang).
-  Nếu công ty có chính sách IT riêng về tự động hoá, nên xác nhận trước.
-- Mỗi người cài độc lập, dùng đúng quyền Jira của mình; không chia sẻ dữ liệu giữa các máy.
+Load unpacked does not auto-update. For a new version: `git pull` (or replace the folder), then go to `chrome://extensions` and click **Reload** on this extension.
+
+---
+
+## Technical notes
+
+- Requires Jira **Server / Data Center** with REST API v2 reachable via cookie session
+  (try opening `https://<your-jira>/rest/api/2/myself` — if it returns JSON, it works).
+- Mentions are detected by `[~username]` in comments, plus a display-name fallback.
+- The extension calls the internal REST API using your own session (the same as you refreshing the page yourself).
+  If your company has a specific IT policy on automation, confirm first.
+- Everyone installs independently and uses their own Jira permissions; no data is shared between machines.
 
 ## License
 
-MIT (xem `LICENSE` nếu có).
+MIT (see `LICENSE` if present).
 
 ---
 
-_tạo bởi Yunchang Dieu_
+_made by Yunchang Dieu_
